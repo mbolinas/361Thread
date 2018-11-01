@@ -100,11 +100,16 @@ int t_create(void (*fct)(int), int id, int pri){
 
 	tmp_ucon->uc_stack.ss_sp = mmap(0, sz, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANON, -1, 0);
 
-	tmp->thread_context->uc_stack.ss_sp = malloc(sz);  /* new statement */
-	tmp->thread_context->uc_stack.ss_size = sz;
-	tmp->thread_context->uc_stack.ss_flags = 0;
-	tmp->thread_context->uc_link = running->thread_context; 
+	tmp_ucon->uc_stack.ss_sp = malloc(sz);  /* new statement */
+	tmp_ucon->uc_stack.ss_size = sz;
+	tmp_ucon->uc_stack.ss_flags = 0;
+	tmp_ucon->uc_link = running->thread_context; 
 	makecontext(tmp->thread_context, (void (*)(void)) fct, 1, id);
+
+	tmp->thread_context = tmp_ucon;
+
+
+	printf("create finished\n");
 	//ready = uc;
 
 	return 0;
