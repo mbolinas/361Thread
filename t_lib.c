@@ -173,6 +173,11 @@ void t_terminate(){
 		running = ready;
 		ready = ready->next;
 		running->next = NULL;
+
+
+
+		setcontext(running->thread_context);
+
 	}
 
 
