@@ -120,13 +120,18 @@ int t_create(void (*fct)(int), int id, int pri){
 
 void t_shutdown(){
 
+
+
     free(running->thread_context->uc_stack.ss_sp);
     free(running->thread_context);
     free(running);
 
+    printf("freed running\n");
+
     tcb *iterator;
     iterator = ready;
     while(iterator != NULL){
+    	printf("freed one tcb\n");
     	tcb *tmp;
     	tmp = iterator;
 
@@ -137,7 +142,7 @@ void t_shutdown(){
 
     }
 
-
+    printf("done freeing\n");
 
 }
 
