@@ -126,12 +126,12 @@ void t_shutdown(){
     free(running->thread_context);
     free(running);
 
-    printf("freed running\n");
+    //printf("freed running\n");
 
     tcb *iterator;
     iterator = ready;
     while(iterator != NULL){
-    	printf("freed one tcb\n");
+    	//printf("freed one tcb\n");
     	tcb *tmp;
     	tmp = iterator;
 
@@ -142,15 +142,28 @@ void t_shutdown(){
 
     }
 
-    printf("done freeing\n");
+    //printf("done freeing\n");
 
 }
 
 void t_terminate(){
 
+	//the thread to terminate is the pointer to the running queue
+	//we need to free() the running queue
+	//and point the running queue to the head of the ready queue
 
+	if(ready == NULL){
+		//what happens when we terminate the only thread remaining?
+	}
+	else{
+		free(running->thread_context->uc_stack.ss_sp);
+		free(running->thread_context);
+		free(running);
 
-
+		running = ready;
+		ready = ready->next;
+		running->next = NULL;
+	}
 
 
 
