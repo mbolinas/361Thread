@@ -65,7 +65,7 @@ int t_create(void (*fct)(int), int id, int pri){
 	tmp->thread_priority = pri;
 	tmp->thread_id = id;
 
-	printf("nice\n");
+	//printf("nice\n");
 
 	tcb *end;
 	end = ready;
@@ -80,7 +80,7 @@ int t_create(void (*fct)(int), int id, int pri){
 		ready = tmp;
 	}
 
-	printf("beep\n");
+	//printf("beep\n");
 
 	size_t sz = 0x10000;
 
@@ -92,11 +92,11 @@ int t_create(void (*fct)(int), int id, int pri){
 
 	//tmp->thread_context = (ucontext_t *) malloc(sizeof(ucontext_t));
 
-	printf("???\n");
+	//printf("???\n");
 
 	getcontext(tmp_ucon);
 
-	printf("yeet\n");
+	//printf("yeet\n");
 
 	tmp_ucon->uc_stack.ss_sp = mmap(0, sz, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANON, -1, 0);
 
@@ -104,7 +104,7 @@ int t_create(void (*fct)(int), int id, int pri){
 	tmp_ucon->uc_stack.ss_size = sz;
 	tmp_ucon->uc_stack.ss_flags = 0;
 
-	printf("uh what\n");
+	//printf("uh what\n");
 
 	tmp_ucon->uc_link = running->thread_context; 
 	makecontext(tmp_ucon, (void (*)(void)) fct, 1, id);
@@ -112,12 +112,48 @@ int t_create(void (*fct)(int), int id, int pri){
 	tmp->thread_context = tmp_ucon;
 
 
-	printf("create finished\n");
+	//printf("create finished\n");
 	//ready = uc;
 
 	return 0;
 }
 
-void t_terminate(){
+void t_shutdown(){
+
+    free(running->thread_context->uc_stack.ss_sp);
+    free(running->thread_context);
+    free(running);
+
+    tcb *iterator;
+    iterator = ready;
+    while(iterator != NULL){
+    	tcb *tmp;
+    	tmp = iterator;
+
+    	free(tmp->thread_context->uc_stack.ss_sp);
+    	free(tmp->thread_context);
+    	iterator = iterator->next;
+    	free(tmp);
+
+    }
+
+
 
 }
+
+void t_terminate(){
+
+
+
+
+
+
+
+}
+
+
+
+
+
+
+
