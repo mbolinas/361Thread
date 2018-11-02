@@ -74,8 +74,10 @@ int t_create(void (*fct)(int), int id, int pri){
 			end = end->next;
 		}
 		end->next = tmp;
+		printf("t_create: added to the end of ready\n");
 	}
 	else{
+		printf("t_create: added to the head of ready\n");
 		//printf("first thread added to ready!\n");
 		ready = tmp;
 	}
@@ -112,7 +114,7 @@ int t_create(void (*fct)(int), int id, int pri){
 	tmp->thread_context = tmp_ucon;
 
 
-	//printf("create finished\n");
+	printf("create finished\n");
 	//ready = uc;
 
 	return 0;
