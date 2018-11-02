@@ -30,6 +30,8 @@ void t_yield(){
 		tcb *tmp;
 		tmp = running;
 
+		printf("end pointer: %d\n", end->thread_id);
+
 		end->next = running;
 		running = ready;
 		ready = ready->next;
