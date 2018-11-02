@@ -1,3 +1,11 @@
+/*
+Marc Bolinas and Brian Phillips
+CISC361
+
+11/2/2018
+
+*/
+
 #include "t_lib.h"
 
 
@@ -7,15 +15,15 @@ tcb *ready = NULL;
 
 
 void t_yield(){
+
 	if(running != NULL && ready != NULL){
 		tcb *end;
 		end = ready;
-		while(end->next != NULL){
+		while(end->next != NULL)
 			end = end->next;
-		}
+		
 
-		tcb *old;
-		tcb *new;
+		tcb *old, *new;
 		old = running;
 		new = ready;
 
@@ -23,10 +31,9 @@ void t_yield(){
 		running = ready;
 		ready = ready->next;
 		running->next = NULL;
+
 		swapcontext(old->thread_context, new->thread_context);
 	}
-
-
 }
 
 void t_init(){
@@ -54,30 +61,30 @@ int t_create(void (*fct)(int), int id, int pri){
 
 	tcb *end;
 	end = ready;
+
+	//append to the end of the ready queue, or initialize it if it's empty
 	if(end != NULL){
-		while(end->next != NULL){
+		while(end->next != NULL)
 			end = end->next;
-		}
+
 		end->next = tmp;
 	}
-	else{
+	else
 		ready = tmp;
-	}
+
+
+	//setting context of stack
 	size_t sz = 0x10000;
-
 	ucontext_t *tmp_ucon;
-
 	tmp_ucon = malloc(sizeof(ucontext_t));
 	getcontext(tmp_ucon);
-
 	tmp_ucon->uc_stack.ss_sp = mmap(0, sz, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANON, -1, 0);
-
 	tmp_ucon->uc_stack.ss_sp = malloc(sz);  /* new statement */
 	tmp_ucon->uc_stack.ss_size = sz;
 	tmp_ucon->uc_stack.ss_flags = 0;
-
 	tmp_ucon->uc_link = running->thread_context; 
 	makecontext(tmp_ucon, (void (*)(void)) fct, 1, id);
+
 
 	tmp->thread_context = tmp_ucon;
 
@@ -85,6 +92,7 @@ int t_create(void (*fct)(int), int id, int pri){
 }
 
 void t_shutdown(){
+	//free everything in running, a pointer, and ready, a list	
     free(running->thread_context->uc_stack.ss_sp);
     free(running->thread_context);
     free(running);
@@ -105,13 +113,21 @@ void t_shutdown(){
 
 void t_terminate(){
 	if(ready == NULL){
-		//what happens when we terminate the only thread remaining?
-		//there's nothing to switch to
-		//does this function just like a t_shutdown()?
-		//if so, then this will free all pointers in ready
-		//but not do any context switching
+		/*
+		what happens when we terminate the only thread remaining?
+		there's nothing to switch to
+		does this function just like a t_shutdown()?
+		if so, then this will free all pointers in ready
+		but not do any context switching
+		*/
 	}
 	else{
+		/*
+		free the currently running thread
+		pick a thread off of ready to run next
+		point running to that thread and then context switch
+		*/
+
 		free(running->thread_context->uc_stack.ss_sp);
 		free(running->thread_context);
 		free(running);
