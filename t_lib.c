@@ -103,6 +103,9 @@ int t_create(void (*fct)(int), int id, int pri){
 	tmp_ucon->uc_stack.ss_sp = malloc(sz);  /* new statement */
 	tmp_ucon->uc_stack.ss_size = sz;
 	tmp_ucon->uc_stack.ss_flags = 0;
+
+	printf("uh what\n");
+
 	tmp_ucon->uc_link = running->thread_context; 
 	makecontext(tmp->thread_context, (void (*)(void)) fct, 1, id);
 
