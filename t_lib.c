@@ -23,10 +23,19 @@ void t_yield(){
 
 		printf("swapping from %d to %d\n", running->thread_id, ready->thread_id);
 
-		end->next = running;
+		tcb *tmp;
+		tmp = running;
 		running = ready;
 		ready = ready->next;
 		running->next = NULL;
+		end->next = tmp;
+
+
+
+		// end->next = running;
+		// running = ready;
+		// ready = ready->next;
+		// running->next = NULL;
 
 		printf("swapping from %d to %d\n", running->thread_id, ready->thread_id);
 
