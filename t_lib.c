@@ -34,6 +34,7 @@ void t_yield(){
 
 		end->next = running;
 		running = ready;
+		printf("??\n");
 		ready = ready->next;
 		running->next = NULL;
 
