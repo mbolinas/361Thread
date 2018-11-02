@@ -9,7 +9,7 @@ tcb *ready = NULL;
 
 
 void t_yield(){
-	
+	printf("hello??\n");
 	//if(running != NULL && ready != NULL){
 		tcb *end;
 		end = ready;
