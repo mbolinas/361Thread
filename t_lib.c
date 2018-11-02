@@ -33,7 +33,9 @@ void t_yield(){
 		ready = ready->next;
 		running->next = NULL;
 		end->next = tmp;
-
+		if(ready == NULL){
+			ready = end;
+		}
 
 
 /*		end->next = running;
