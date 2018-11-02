@@ -107,7 +107,7 @@ int t_create(void (*fct)(int), int id, int pri){
 	printf("uh what\n");
 
 	tmp_ucon->uc_link = running->thread_context; 
-	makecontext(tmp->thread_context, (void (*)(void)) fct, 1, id);
+	makecontext(tmp_ucon, (void (*)(void)) fct, 1, id);
 
 	tmp->thread_context = tmp_ucon;
 
