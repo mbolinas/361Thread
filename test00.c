@@ -1,42 +1,54 @@
-/*
- * Test Program T1 - Thread Creation
- */
-
-#include <stdio.h>
 #include "ud_thread.h"
+#include <stdio.h>
 
-void function(int thr_id) 
-{
-   int i, j;
+void assign(int pri) {
+    int i;
 
-   for (i = j = 0; i < 3; i++, j++) {
-      printf("this is thread %d [%d]...\n", thr_id, j);
-      t_yield();
-   }
+    for (i = 0; i < 3; i++)
+        printf("in assign(1): %d\n", i);
 
-   printf("Thread %d is done...\n", thr_id);
-   t_terminate();
+    t_yield();
+
+    for (i = 10; i < 13; i++)
+        printf("in assign(2): %d\n", i);
+
+    t_yield();
+
+    for (i = 20; i < 23; i++)
+        printf("in assign(3): %d\n", i);
 }
 
-int main(void)
-{
-   int i;
+int main(int argc, char **argv) {
+    t_init();
+    t_create(assign, 1, 1);
 
-   t_init();
-   t_create(function, 1, 1);
-   printf("This is main(1)...\n");
-   t_create(function, 2, 1);
-   printf("This is main(2)...\n");
-   t_create(function, 3, 1);
+    printf("in main(): 0\n");
 
-   for (i = 0; i < 4; i++) {
-      printf("This is main(3)[%d]...\n", i);
-      t_yield();
-   }
+    t_yield();
 
-   printf("Begin shutdown...\n");
-   t_shutdown();
-   printf("Done with shutdown...\n");
+    printf("in main(): 1\n");
+    t_yield();
 
-   return 0;
+    printf("in main(): 2\n");
+    t_yield();
+
+    printf("done...\n");
+
+    return (0);
 }
+
+/* --- output -----
+in main(): 0
+in assign(1): 0
+in assign(1): 1
+in assign(1): 2
+in main(): 1
+in assign(2): 10
+in assign(2): 11
+in assign(2): 12
+in main(): 2
+in assign(3): 20
+in assign(3): 21
+in assign(3): 22
+done...
+*/
