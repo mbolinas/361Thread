@@ -18,6 +18,7 @@ void t_yield(){
 			printf("%d ", end->thread_id);
 			end = end->next;
 		}
+		printf("%d ", end->thread_id);
 		printf("\n");
 
 		printf("swapping from %d to %d\n", running->thread_id, ready->thread_id);
