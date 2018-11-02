@@ -12,7 +12,9 @@ void t_yield(){
 	printf("hello??\n");
 	//if(running != NULL && ready != NULL){
 		tcb *end;
+		printf("adsf\n");
 		end = ready;
+		printf("asfsaf\n");
 		printf("traversing ready queue: ");
 		while(end->next != NULL){
 			printf("%d ", end->thread_id);
