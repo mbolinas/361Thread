@@ -29,13 +29,11 @@ void t_yield(){
 
 		tcb *tmp;
 		tmp = running;
+
+		end->next = running;
 		running = ready;
 		ready = ready->next;
 		running->next = NULL;
-		end->next = tmp;
-		if(ready == NULL){
-			ready = end;
-		}
 
 
 /*		end->next = running;
