@@ -13,9 +13,12 @@ void t_yield(){
 	if(running != NULL && ready != NULL){
 		tcb *end;
 		end = ready;
+		printf("traversing ready queue: ");
 		while(end->next != NULL){
+			printf("%d ", end->thread_id);
 			end = end->next;
 		}
+		printf("\n");
 
 		printf("swapping from %d to %d\n", running->thread_id, ready->thread_id);
 
