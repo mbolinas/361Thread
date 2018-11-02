@@ -17,12 +17,12 @@ void t_yield(){
 			end = end->next;
 		}
 
+		printf("swapping from %d to %d\n", running->thread_id, ready->thread_id);
+
 		end->next = running;
 		running = ready;
 		ready = ready->next;
 		running->next = NULL;
-
-		printf("yielding between %d and %d\n", running->thread_id, ready->thread_id);
 
 		swapcontext(ready->thread_context, running->thread_context);
 	}
