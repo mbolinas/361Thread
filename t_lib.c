@@ -22,6 +22,8 @@ void t_yield(){
 		ready = ready->next;
 		running->next = NULL;
 
+		printf("yielding between %d and %d\n", running->thread_id, ready->thread_id);
+
 		swapcontext(ready->thread_context, running->thread_context);
 	}
 
