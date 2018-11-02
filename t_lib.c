@@ -21,12 +21,14 @@ void t_yield(){
 		printf("%d ", end->thread_id);
 		printf("\n");
 
-		printf("swapping from %d to %d\n", running->thread_id, ready->thread_id);
+		//printf("swapping from %d to %d\n", running->thread_id, ready->thread_id);
 
 		end->next = running;
 		running = ready;
 		ready = ready->next;
 		running->next = NULL;
+
+		printf("swapping from %d to %d\n", running->thread_id, ready->thread_id);
 
 		swapcontext(ready->thread_context, running->thread_context);
 	}
@@ -80,10 +82,10 @@ int t_create(void (*fct)(int), int id, int pri){
 			end = end->next;
 		}
 		end->next = tmp;
-		printf("t_create: added to the end of ready\n");
+		//printf("t_create: added to the end of ready\n");
 	}
 	else{
-		printf("t_create: added to the head of ready\n");
+		//printf("t_create: added to the head of ready\n");
 		//printf("first thread added to ready!\n");
 		ready = tmp;
 	}
@@ -120,7 +122,7 @@ int t_create(void (*fct)(int), int id, int pri){
 	tmp->thread_context = tmp_ucon;
 
 
-	printf("create finished\n");
+	//printf("create finished\n");
 	//ready = uc;
 
 	return 0;
