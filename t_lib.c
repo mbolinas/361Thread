@@ -9,7 +9,7 @@ tcb *ready = NULL;
 
 
 void t_yield(){
-	//if(running != NULL && ready != NULL){
+	if(running != NULL && ready != NULL){
 		tcb *end;
 		end = ready;
 		printf("traversing ready queue: ");
@@ -46,7 +46,7 @@ void t_yield(){
 		printf("swapping from %d to %d\n", old->thread_id, new ->thread_id);
 
 		swapcontext(old->thread_context, new->thread_context);
-	//}
+	}
 
 
 
