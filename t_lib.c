@@ -45,7 +45,7 @@ void t_yield(){
 
 		printf("swapping from %d to %d\n", end->next->thread_id, running->thread_id);
 
-		swapcontext(new->thread_context, old->thread_context);
+		swapcontext(old->thread_context, new->thread_context);
 	}
 
 
