@@ -42,6 +42,7 @@ void t_yield(){
 		old = running;
 
 		if(old->thread_id == 0){
+			printf("AAAAAA\n");
 			end = readyhigh;
 			if(end == NULL){
 				end = old;
@@ -55,16 +56,19 @@ void t_yield(){
 			
 		}
 		else{
+			printf("adding to low queue...");
 			end = readylow;
 			if(end == NULL){
+				printf("low queue was empty...");
 				end = old;
 			}
 			else{
 				while(end->next != NULL)
 					end = end->next;
+				printf("%d->%d...", end->thread_id, old->thread_id);
 				end->next = old;
 			}	
-
+			printf("\n");
 
 		}
 		if(readyhigh == NULL){
@@ -76,7 +80,7 @@ void t_yield(){
 			readylow = readylow->next;
 		}
 
-				printf("swapping %d to %d\n", old->thread_id, new->thread_id);
+		//printf("swapping %d to %d\n", old->thread_id, new->thread_id);
 
 		running = new;
 		running->next = NULL;
