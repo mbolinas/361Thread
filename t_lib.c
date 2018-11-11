@@ -10,13 +10,14 @@ CISC361
 
 
 tcb *running = NULL;
-tcb *ready = NULL;
+tcb *readyhigh = NULL;
+tcb *readylow = NULL;
 
 
 
 void t_yield(){
-
-	if(running != NULL && ready != NULL){
+	/*
+	if(running != NULL && ready != NULL){	//if the high priority queue isn't empty, switch with high priority thread
 		tcb *end;
 		end = ready;
 		while(end->next != NULL)
@@ -34,13 +35,66 @@ void t_yield(){
 
 		swapcontext(old->thread_context, new->thread_context);
 	}
+	*/
+
+	if(readyhigh != NULL || readylow != NULL){
+		tcb *old, *new, *end;
+		old = running;
+
+		if(old->thread_id == 0){
+			end = readyhigh;
+			if(end == NULL){
+				end = old;
+			}
+			else{
+				while(end->next != NULL)
+					end = end->next;
+				end->next = old;
+			}
+
+			
+		}
+		else{
+			end = readylow;
+			if(end == NULL){
+				end = old;
+			}
+			else{
+				while(end->next != NULL)
+					end = end->next;
+				end->next = old;
+			}	
+
+
+		}
+		if(readyhigh == NULL){
+			new = readylow;
+			readylow = readylow->next;
+		}
+		else{
+			new = readyhigh;
+			readylow = readylow->next;
+		}
+
+		running = new;
+		running->next = NULL;
+
+		swapcontext(old->thread_context, new->thread_context);
+
+	}
+
+
+
+
+
+
 }
 
 void t_init(){
 
 	tcb *tmp;
 	tmp = malloc(sizeof(tcb));
-	tmp->thread_priority = 0;
+	tmp->thread_priority = 1;
 	tmp->thread_id = 0;
 	tmp->next = NULL;
 	tmp->thread_context = malloc(sizeof(ucontext_t));
@@ -48,11 +102,14 @@ void t_init(){
 
   	getcontext(tmp->thread_context);    /* let tmp be the context of main() */
 	running = tmp;
-	ready = NULL;
+	readyhigh = NULL;
+	readylow = NULL;
+
+	printf("init finished\n");
 }
 
 int t_create(void (*fct)(int), int id, int pri){
-
+	printf("creating...\n");
 	tcb *tmp;
 	tmp = malloc(sizeof(tcb));
 	tmp->next = NULL;
@@ -60,18 +117,35 @@ int t_create(void (*fct)(int), int id, int pri){
 	tmp->thread_id = id;
 
 	tcb *end;
-	end = ready;
 
-	//append to the end of the ready queue, or initialize it if it's empty
-	if(end != NULL){
-		while(end->next != NULL)
-			end = end->next;
+	//append to the end of the correct ready queue, or initialize it if it's empty
+	if(id == 0){
+		printf("appending to readyhigh\n");
+		end = readyhigh;
+		if(end != NULL){
+			while(end->next != NULL)
+				end = end->next;
 
-		end->next = tmp;
+			end->next = tmp;
+		}
+		else
+			printf("added to head of readyhigh\n");
+			readyhigh = tmp;
+		}
+	else{
+		printf("appending to readylow\n");
+		end = readylow;
+		if(end != NULL){
+			while(end->next != NULL)
+				end = end->next;
+
+			end->next = tmp;
+		}
+		else{
+			printf("added to head of readylow\n");
+			readylow = tmp;
+		}
 	}
-	else
-		ready = tmp;
-
 
 	//setting context of stack
 	size_t sz = 0x10000;
@@ -98,7 +172,18 @@ void t_shutdown(){
     free(running);
 
     tcb *iterator;
-    iterator = ready;
+    iterator = readyhigh;
+    while(iterator != NULL){
+    	tcb *tmp;
+    	tmp = iterator;
+
+    	free(tmp->thread_context->uc_stack.ss_sp);
+    	free(tmp->thread_context);
+    	iterator = iterator->next;
+    	free(tmp);
+
+    }
+    iterator = readylow;
     while(iterator != NULL){
     	tcb *tmp;
     	tmp = iterator;
@@ -112,7 +197,7 @@ void t_shutdown(){
 }
 
 void t_terminate(){
-	if(ready == NULL){
+	if(readyhigh == NULL && readylow == NULL){
 		/*
 		what happens when we terminate the only thread remaining?
 		there's nothing to switch to
@@ -132,9 +217,18 @@ void t_terminate(){
 		free(running->thread_context);
 		free(running);
 
-		running = ready;
-		ready = ready->next;
-		running->next = NULL;
+		running = readyhigh;
+		if(readyhigh != NULL){
+			running = readyhigh;
+			readyhigh = readyhigh->next;
+			running->next = NULL;
+		}
+		else{
+			running = readylow;
+			readylow = readylow->next;
+			running->next = NULL;
+		}
+
 
 
 
