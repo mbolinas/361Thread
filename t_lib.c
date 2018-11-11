@@ -101,7 +101,7 @@ int t_create(void (*fct)(int), int id, int pri){
 	tcb *end;
 
 	//append to the end of the correct ready queue, or initialize it if it's empty
-	if(id == 0){
+	if(pri == 0){
 		//printf("appending to readyhigh\n");
 		end = readyhigh;
 		if(end != NULL){
