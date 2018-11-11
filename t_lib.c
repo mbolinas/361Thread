@@ -71,6 +71,7 @@ void t_yield(){
 			new = readylow;
 			readylow = readylow->next;
 		}
+		printf("swapping %d to %d\n", old->thread_id, new->thread_id);
 		else{
 			new = readyhigh;
 			readylow = readylow->next;
@@ -105,11 +106,11 @@ void t_init(){
 	readyhigh = NULL;
 	readylow = NULL;
 
-	printf("init finished\n");
+	//printf("init finished\n");
 }
 
 int t_create(void (*fct)(int), int id, int pri){
-	printf("creating...\n");
+	//printf("creating...\n");
 	tcb *tmp;
 	tmp = malloc(sizeof(tcb));
 	tmp->next = NULL;
@@ -120,7 +121,7 @@ int t_create(void (*fct)(int), int id, int pri){
 
 	//append to the end of the correct ready queue, or initialize it if it's empty
 	if(id == 0){
-		printf("appending to readyhigh\n");
+		//printf("appending to readyhigh\n");
 		end = readyhigh;
 		if(end != NULL){
 			while(end->next != NULL)
@@ -129,11 +130,11 @@ int t_create(void (*fct)(int), int id, int pri){
 			end->next = tmp;
 		}
 		else
-			printf("added to head of readyhigh\n");
+			//printf("added to head of readyhigh\n");
 			readyhigh = tmp;
 		}
 	else{
-		printf("appending to readylow\n");
+		//printf("appending to readylow\n");
 		end = readylow;
 		if(end != NULL){
 			while(end->next != NULL)
@@ -142,7 +143,7 @@ int t_create(void (*fct)(int), int id, int pri){
 			end->next = tmp;
 		}
 		else{
-			printf("added to head of readylow\n");
+			//printf("added to head of readylow\n");
 			readylow = tmp;
 		}
 	}
