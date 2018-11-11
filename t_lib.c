@@ -16,33 +16,12 @@ tcb *readylow = NULL;
 
 
 void t_yield(){
-	/*
-	if(running != NULL && ready != NULL){	//if the high priority queue isn't empty, switch with high priority thread
-		tcb *end;
-		end = ready;
-		while(end->next != NULL)
-			end = end->next;
-		
-
-		tcb *old, *new;
-		old = running;
-		new = ready;
-
-		end->next = running;
-		running = ready;
-		ready = ready->next;
-		running->next = NULL;
-
-		swapcontext(old->thread_context, new->thread_context);
-	}
-	*/
 
 	if(readyhigh != NULL || readylow != NULL){
 		tcb *old, *new, *end;
 		old = running;
 
 		if(old->thread_priority == 0){
-			//printf("AAAAAA\n");
 			end = readyhigh;
 			if(end == NULL){
 				end = old;
@@ -87,6 +66,9 @@ void t_yield(){
 
 		swapcontext(old->thread_context, new->thread_context);
 
+	}
+	else{
+		printf("AAAAAAAAAAAA\n");
 	}
 
 
