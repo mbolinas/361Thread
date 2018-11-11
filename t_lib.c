@@ -41,7 +41,7 @@ void t_yield(){
 		tcb *old, *new, *end;
 		old = running;
 
-		if(old->thread_id == 0){
+		if(old->thread_priority == 0){
 			printf("AAAAAA\n");
 			end = readyhigh;
 			if(end == NULL){
