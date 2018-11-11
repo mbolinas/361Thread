@@ -24,7 +24,7 @@ void t_yield(){
 		if(old->thread_priority == 0){
 			end = readyhigh;
 			if(end == NULL){
-				end = old;
+				readyhigh = old;
 			}
 			else{
 				while(end->next != NULL)
@@ -35,19 +35,15 @@ void t_yield(){
 			
 		}
 		else{
-			///\printf("adding to low queue...");
 			end = readylow;
 			if(end == NULL){
-		//printf("low queue was empty...");
-				end = old;
+				readylow = old;
 			}
 			else{
 				while(end->next != NULL)
 					end = end->next;
-				//printf("%d->%d...", end->thread_id, old->thread_id);
 				end->next = old;
 			}	
-			//printf("\n");
 
 		}
 		if(readyhigh == NULL){
@@ -59,7 +55,7 @@ void t_yield(){
 			readyhigh = readyhigh->next;
 		}
 
-		//printf("swapping %d to %d\n", old->thread_id, new->thread_id);
+
 
 		running = new;
 		running->next = NULL;
