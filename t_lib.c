@@ -71,11 +71,12 @@ void t_yield(){
 			new = readylow;
 			readylow = readylow->next;
 		}
-		printf("swapping %d to %d\n", old->thread_id, new->thread_id);
 		else{
 			new = readyhigh;
 			readylow = readylow->next;
 		}
+
+				printf("swapping %d to %d\n", old->thread_id, new->thread_id);
 
 		running = new;
 		running->next = NULL;
