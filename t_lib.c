@@ -100,9 +100,7 @@ int t_create(void (*fct)(int), int id, int pri){
 
 	tcb *end;
 
-	//append to the end of the correct ready queue, or initialize it if it's empty
 	if(pri == 0){
-		//printf("appending to readyhigh\n");
 		end = readyhigh;
 		if(end != NULL){
 			while(end->next != NULL)
@@ -110,12 +108,11 @@ int t_create(void (*fct)(int), int id, int pri){
 
 			end->next = tmp;
 		}
-		else
-			//printf("added to head of readyhigh\n");
+		else{
 			readyhigh = tmp;
 		}
+	}
 	else{
-		//printf("appending to readylow\n");
 		end = readylow;
 		if(end != NULL){
 			while(end->next != NULL)
@@ -124,7 +121,6 @@ int t_create(void (*fct)(int), int id, int pri){
 			end->next = tmp;
 		}
 		else{
-			//printf("added to head of readylow\n");
 			readylow = tmp;
 		}
 	}
