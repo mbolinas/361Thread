@@ -16,8 +16,9 @@ tcb *readylow = NULL;
 
 
 void t_yield(){
-	ualarm(0, 0);
 	if(readyhigh != NULL || readylow != NULL){
+		ualarm(0, 0);
+		sighold(14);
 		tcb *old, *new, *end;
 		old = running;
 
@@ -61,7 +62,7 @@ void t_yield(){
 		running->next = NULL;
 
 		ualarm(1000, 0);
-
+		sigrelse(14);
 		swapcontext(old->thread_context, new->thread_context);
 
 	}
@@ -75,7 +76,7 @@ void t_yield(){
 }
 
 void t_init(){
-
+	sighold(14);
 	tcb *tmp;
 	tmp = malloc(sizeof(tcb));
 	tmp->thread_priority = 1;
@@ -91,9 +92,11 @@ void t_init(){
 
 	signal(SIGALRM, force_yield);
 	ualarm(1000, 0);
+	sigrelse(14);
 }
 
 int t_create(void (*fct)(int), int id, int pri){
+	sighold(14);
 	tcb *tmp;
 	tmp = malloc(sizeof(tcb));
 	tmp->next = NULL;
@@ -141,12 +144,13 @@ int t_create(void (*fct)(int), int id, int pri){
 
 
 	tmp->thread_context = tmp_ucon;
-
+	sigrelse(14);
 	return 0;
 }
 
 void t_shutdown(){
 	//free everything in running, a pointer, and ready, a list	
+	sighold(14);
     free(running->thread_context->uc_stack.ss_sp);
     free(running->thread_context);
     free(running);
@@ -174,9 +178,11 @@ void t_shutdown(){
     	free(tmp);
 
     }
+    sigrelse(14);
 }
 
 void t_terminate(){
+	sighold(14);
 	if(readyhigh == NULL && readylow == NULL){
 		/*
 		what happens when we terminate the only thread remaining?
@@ -215,7 +221,7 @@ void t_terminate(){
 		setcontext(running->thread_context);
 
 	}
-
+	sigrelse(14);
 
 
 }
