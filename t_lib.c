@@ -220,8 +220,8 @@ void t_terminate(){
 
 }
 
-void force_yield(int sig){
-	printf("forcing yield...%d\n", sig);
+void force_yield(){
+	printf("forcing yield...\n");
 	fflush(stdout);
 	t_yield();
 }
