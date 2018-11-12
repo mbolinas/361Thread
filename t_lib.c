@@ -16,7 +16,7 @@ tcb *readylow = NULL;
 
 
 void t_yield(){
-
+	ualarm(0, 0);
 	if(readyhigh != NULL || readylow != NULL){
 		tcb *old, *new, *end;
 		old = running;
@@ -60,6 +60,8 @@ void t_yield(){
 		running = new;
 		running->next = NULL;
 
+		ualarm(20000, 0);
+
 		swapcontext(old->thread_context, new->thread_context);
 
 	}
@@ -87,11 +89,11 @@ void t_init(){
 	readyhigh = NULL;
 	readylow = NULL;
 
-	//printf("init finished\n");
+	signal(SIGALRM, force_yield);
+	ualarm(20000, 0);
 }
 
 int t_create(void (*fct)(int), int id, int pri){
-	//printf("creating...\n");
 	tcb *tmp;
 	tmp = malloc(sizeof(tcb));
 	tmp->next = NULL;
@@ -187,7 +189,7 @@ void t_terminate(){
 	else{
 		/*
 		free the currently running thread
-		pick a thread off of ready to run next
+		pick a thread off of readyhigh or readylow to run next
 		point running to that thread and then context switch
 		*/
 
@@ -216,6 +218,12 @@ void t_terminate(){
 
 
 
+}
+
+void force_yield(){
+	printf("forcing yield...\n");
+	fflush(stdout);
+	t_yield();
 }
 
 
