@@ -18,7 +18,7 @@ tcb *readylow = NULL;
 void t_yield(){
 	if(readyhigh != NULL || readylow != NULL){
 		ualarm(0, 0);
-		sighold(14);
+		//sighold(14);
 		tcb *old, *new, *end;
 		old = running;
 
@@ -61,7 +61,7 @@ void t_yield(){
 		running = new;
 		running->next = NULL;
 
-		sigrelse(14);
+		//sigrelse(14);
 		ualarm(1000, 0);
 		swapcontext(old->thread_context, new->thread_context);
 
