@@ -60,7 +60,7 @@ void t_yield(){
 		running = new;
 		running->next = NULL;
 
-		ualarm(20000, 0);
+		ualarm(1, 0);
 
 		swapcontext(old->thread_context, new->thread_context);
 
@@ -90,7 +90,7 @@ void t_init(){
 	readylow = NULL;
 
 	signal(SIGALRM, force_yield);
-	ualarm(20000, 0);
+	ualarm(1, 0);
 }
 
 int t_create(void (*fct)(int), int id, int pri){
@@ -220,8 +220,8 @@ void t_terminate(){
 
 }
 
-void force_yield(){
-	printf("forcing yield...\n");
+void force_yield(int sig){
+	printf("forcing yield...%d\n", sig);
 	fflush(stdout);
 	t_yield();
 }
