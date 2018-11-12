@@ -76,7 +76,6 @@ void t_yield(){
 }
 
 void t_init(){
-	sigrelse(14);
 	tcb *tmp;
 	tmp = malloc(sizeof(tcb));
 	tmp->thread_priority = 1;
@@ -91,7 +90,6 @@ void t_init(){
 	readylow = NULL;
 
 	signal(SIGALRM, force_yield);
-	sighold(14);
 	ualarm(1000, 0);
 }
 
