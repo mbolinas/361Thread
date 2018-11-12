@@ -5,6 +5,13 @@
 
 //#include "ud_thread.h"
 
+void t_create(void(*function)(int), int thread_id, int priority);
+void t_yield();
+void t_init();
+void t_terminate();
+void t_shutdown();
+void force_yield();
+
 struct tcb{
 	int thread_id;
 	int thread_priority;
