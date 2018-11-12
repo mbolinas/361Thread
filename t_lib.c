@@ -61,8 +61,8 @@ void t_yield(){
 		running = new;
 		running->next = NULL;
 
-		ualarm(1000, 0);
 		sigrelse(14);
+		ualarm(1000, 0);
 		swapcontext(old->thread_context, new->thread_context);
 
 	}
