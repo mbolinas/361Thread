@@ -60,7 +60,7 @@ void t_yield(){
 		running = new;
 		running->next = NULL;
 
-		ualarm(100, 0);
+		ualarm(1000, 0);
 
 		swapcontext(old->thread_context, new->thread_context);
 
@@ -90,7 +90,7 @@ void t_init(){
 	readylow = NULL;
 
 	signal(SIGALRM, force_yield);
-	ualarm(100, 0);
+	ualarm(1000, 0);
 }
 
 int t_create(void (*fct)(int), int id, int pri){
