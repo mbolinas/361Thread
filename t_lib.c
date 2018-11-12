@@ -94,7 +94,7 @@ void t_init(){
 }
 
 int t_create(void (*fct)(int), int id, int pri){
-	sigrelse(14);
+	//sigrelse(14);
 	tcb *tmp;
 	tmp = malloc(sizeof(tcb));
 	tmp->next = NULL;
@@ -142,13 +142,13 @@ int t_create(void (*fct)(int), int id, int pri){
 
 
 	tmp->thread_context = tmp_ucon;
-	sighold(14);
+	//sighold(14);
 	return 0;
 }
 
 void t_shutdown(){
 	//free everything in running, a pointer, and ready, a list	
-	sigrelse(14);
+	//sigrelse(14);
     free(running->thread_context->uc_stack.ss_sp);
     free(running->thread_context);
     free(running);
@@ -176,11 +176,11 @@ void t_shutdown(){
     	free(tmp);
 
     }
-    sighold(14);
+    //sighold(14);
 }
 
 void t_terminate(){
-	sigrelse(14);
+	//sigrelse(14);
 	if(readyhigh == NULL && readylow == NULL){
 		/*
 		what happens when we terminate the only thread remaining?
@@ -219,7 +219,7 @@ void t_terminate(){
 		setcontext(running->thread_context);
 
 	}
-	sighold(14);
+	//sighold(14);
 
 
 }
