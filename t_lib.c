@@ -1,84 +1,44 @@
 /*
 Marc Bolinas and Brian Phillips
 CISC361
-
-11/11/2018
-
+11/2/2018
 */
 
 #include "t_lib.h"
 
 
 tcb *running = NULL;
-tcb *readyhigh = NULL;
-tcb *readylow = NULL;
+tcb *ready = NULL;
 
 
 
 void t_yield(){
-	if(readyhigh != NULL || readylow != NULL){
-		ualarm(0, 0);
-		//sighold(14);
-		tcb *old, *new, *end;
+
+	if(running != NULL && ready != NULL){
+		tcb *end;
+		end = ready;
+		while(end->next != NULL)
+			end = end->next;
+		
+
+		tcb *old, *new;
 		old = running;
+		new = ready;
 
-		if(old->thread_priority == 0){
-			end = readyhigh;
-			if(end == NULL){
-				readyhigh = old;
-			}
-			else{
-				while(end->next != NULL)
-					end = end->next;
-				end->next = old;
-			}
-
-			
-		}
-		else{
-			end = readylow;
-			if(end == NULL){
-				readylow = old;
-			}
-			else{
-				while(end->next != NULL)
-					end = end->next;
-				end->next = old;
-			}	
-
-		}
-		if(readyhigh == NULL){
-			new = readylow;
-			readylow = readylow->next;
-		}
-		else{
-			new = readyhigh;
-			readyhigh = readyhigh->next;
-		}
-
-
-
-		running = new;
+		end->next = running;
+		running = ready;
+		ready = ready->next;
 		running->next = NULL;
 
-		//sigrelse(14);
-		ualarm(1000, 0);
 		swapcontext(old->thread_context, new->thread_context);
-
 	}
-
-
-
-
-
-
-
 }
 
 void t_init(){
+
 	tcb *tmp;
 	tmp = malloc(sizeof(tcb));
-	tmp->thread_priority = 1;
+	tmp->thread_priority = 0;
 	tmp->thread_id = 0;
 	tmp->next = NULL;
 	tmp->thread_context = malloc(sizeof(ucontext_t));
@@ -86,15 +46,11 @@ void t_init(){
 
   	getcontext(tmp->thread_context);    /* let tmp be the context of main() */
 	running = tmp;
-	readyhigh = NULL;
-	readylow = NULL;
-
-	signal(SIGALRM, force_yield);
-	ualarm(1000, 0);
+	ready = NULL;
 }
 
 int t_create(void (*fct)(int), int id, int pri){
-	//sigrelse(14);
+
 	tcb *tmp;
 	tmp = malloc(sizeof(tcb));
 	tmp->next = NULL;
@@ -102,31 +58,18 @@ int t_create(void (*fct)(int), int id, int pri){
 	tmp->thread_id = id;
 
 	tcb *end;
+	end = ready;
 
-	if(pri == 0){
-		end = readyhigh;
-		if(end != NULL){
-			while(end->next != NULL)
-				end = end->next;
+	//append to the end of the ready queue, or initialize it if it's empty
+	if(end != NULL){
+		while(end->next != NULL)
+			end = end->next;
 
-			end->next = tmp;
-		}
-		else{
-			readyhigh = tmp;
-		}
+		end->next = tmp;
 	}
-	else{
-		end = readylow;
-		if(end != NULL){
-			while(end->next != NULL)
-				end = end->next;
+	else
+		ready = tmp;
 
-			end->next = tmp;
-		}
-		else{
-			readylow = tmp;
-		}
-	}
 
 	//setting context of stack
 	size_t sz = 0x10000;
@@ -142,19 +85,18 @@ int t_create(void (*fct)(int), int id, int pri){
 
 
 	tmp->thread_context = tmp_ucon;
-	//sighold(14);
+
 	return 0;
 }
 
 void t_shutdown(){
 	//free everything in running, a pointer, and ready, a list	
-	//sigrelse(14);
     free(running->thread_context->uc_stack.ss_sp);
     free(running->thread_context);
     free(running);
 
     tcb *iterator;
-    iterator = readyhigh;
+    iterator = ready;
     while(iterator != NULL){
     	tcb *tmp;
     	tmp = iterator;
@@ -165,23 +107,10 @@ void t_shutdown(){
     	free(tmp);
 
     }
-    iterator = readylow;
-    while(iterator != NULL){
-    	tcb *tmp;
-    	tmp = iterator;
-
-    	free(tmp->thread_context->uc_stack.ss_sp);
-    	free(tmp->thread_context);
-    	iterator = iterator->next;
-    	free(tmp);
-
-    }
-    //sighold(14);
 }
 
 void t_terminate(){
-	//sigrelse(14);
-	if(readyhigh == NULL && readylow == NULL){
+	if(ready == NULL){
 		/*
 		what happens when we terminate the only thread remaining?
 		there's nothing to switch to
@@ -193,7 +122,7 @@ void t_terminate(){
 	else{
 		/*
 		free the currently running thread
-		pick a thread off of readyhigh or readylow to run next
+		pick a thread off of ready to run next
 		point running to that thread and then context switch
 		*/
 
@@ -201,38 +130,16 @@ void t_terminate(){
 		free(running->thread_context);
 		free(running);
 
-		running = readyhigh;
-		if(readyhigh != NULL){
-			running = readyhigh;
-			readyhigh = readyhigh->next;
-			running->next = NULL;
-		}
-		else{
-			running = readylow;
-			readylow = readylow->next;
-			running->next = NULL;
-		}
-
+		running = ready;
+		ready = ready->next;
+		running->next = NULL;
 
 
 
 		setcontext(running->thread_context);
 
 	}
-	//sighold(14);
+
 
 
 }
-
-void force_yield(){
-	printf("forcing yield...\n");
-	fflush(stdout);
-	t_yield();
-}
-
-
-
-
-
-
-
