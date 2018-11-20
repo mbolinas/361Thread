@@ -13,7 +13,8 @@ tcb *ready = NULL;
 
 
 void t_yield(){
-
+	//printf("??\n");
+	//fflush(stdout);
 	if(running != NULL && ready != NULL){
 		tcb *end;
 		end = ready;
@@ -29,7 +30,7 @@ void t_yield(){
 		running = ready;
 		ready = ready->next;
 		running->next = NULL;
-
+		//printf("yeet\n");
 		swapcontext(old->thread_context, new->thread_context);
 	}
 }
@@ -49,7 +50,7 @@ void t_init(){
 	ready = NULL;
 }
 
-int t_create(void (*fct)(int), int id, int pri){
+void t_create(void (*fct)(int), int id, int pri){
 
 	tcb *tmp;
 	tmp = malloc(sizeof(tcb));
@@ -85,8 +86,6 @@ int t_create(void (*fct)(int), int id, int pri){
 
 
 	tmp->thread_context = tmp_ucon;
-
-	return 0;
 }
 
 void t_shutdown(){

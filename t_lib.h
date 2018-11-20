@@ -6,7 +6,7 @@
 
 //#include "ud_thread.h"
 
-int t_create(void (*fct)(int), int id, int pri);
+void t_create(void (*fct)(int), int id, int pri);
 void t_yield();
 void t_init();
 void t_terminate();
