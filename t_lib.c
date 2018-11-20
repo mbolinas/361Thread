@@ -142,7 +142,6 @@ void t_terminate(){
 }
 
 int sem_init(sem_t **sp, int sem_count){
-	sp = malloc(sizeof(sem_t *));
 	*sp = malloc(sizeof(sem_t));
 	(*sp)->count = sem_count;
 	(*sp)->q = NULL;
@@ -151,17 +150,46 @@ int sem_init(sem_t **sp, int sem_count){
 }
 
 void sem_wait(sem_t *sp){
-	//stop interrupts
+	//sighold()
 
 	sp->count = sp->count - 1;
 	if(sp->count < 0){
-		//place process in sp->queue
-		//block process and allow interrupts
+		if(ready == NULL){
+			//this should never happen unless the example code is bad
+			//this should only occur due to user error
+			printf("sem_wait() failed! no other thread to switch to\n");
+
+		}
+		else if(sp->q == NULL){
+			tcb *old, *new;
+			old = running;
+			new = ready;
+			sp->q = running;
+			running = ready;
+			ready = ready->next;
+			running->next = NULL;
+			//sigrelse()
+			swapcontext(old->thread_context, new->thread_context);
+		}
+		else{
+			tcb *old, *new, *end;
+			old = running;
+			new = ready;
+			end = sp->q;
+			while(end->next != NULL)
+				end = end->next;
+
+			end->next = running;
+			running = ready;
+			ready = ready->next;
+			running->next = NULL;
+
+			//sigrelse()
+			swapcontext(old->thread_context, new->thread_context);
+
+		}
 	}
-
-
-
-	//allow interrupts
+	//sigrelse()
 }
 
 void sem_signal(sem_t *sp){
@@ -171,6 +199,9 @@ void sem_signal(sem_t *sp){
 	if(sp->count <= 0){
 		//remove a process from sp->queue
 		//place process onto the ready list
+			//moves the first thread in sp->queue to the end of ready
+			//re-enable interrupts
+			//finish
 	}
 
 
