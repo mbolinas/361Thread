@@ -193,20 +193,32 @@ void sem_wait(sem_t *sp){
 }
 
 void sem_signal(sem_t *sp){
-	//stop interrupts
+	//sighold()
 
 	sp->count = sp->count + 1;
 	if(sp->count <= 0){
-		//remove a process from sp->queue
-		//place process onto the ready list
-			//moves the first thread in sp->queue to the end of ready
-			//re-enable interrupts
-			//finish
+		tcb *end;
+		end = ready;
+		tcb *tmp = sp->q;
+		if(tmp != NULL){
+			sp->q = sp->q->next;
+			if(end == NULL){
+				end = tmp;
+				tmp->next = NULL;
+			}
+			else{
+				while(end->next != NULL)
+					end = end->next;
+				end->next = tmp;
+				tmp->next = NULL;
+			}
+
+		}
 	}
 
 
 
-	//allow interrupts	
+	//sigrelse()
 }
 
 void sem_destroy(sem_t **sp){
