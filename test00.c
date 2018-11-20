@@ -1,42 +1,86 @@
-/*
- * Test Program T1 - Thread Creation
+/* 
+ * Test Program #3 - Semaphore
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "ud_thread.h"
 
-void function(int thr_id) 
-{
-   int i, j;
+sem_t *s;
+int resource = 0;
 
-   for (i = j = 0; i < 3; i++, j++) {
-      printf("this is thread %d [%d]...\n", thr_id, j);
+void read_function(int val) 
+{
+   long i, j ;
+   int res_before, res_after;
+
+   for (i = 0; i < 5; i++) {
+      printf("I am READ thread %d (%d)\n", val, i);
+
+      sem_wait(s);
+            
+      res_before = resource;
+      printf("  [%d READ %d] resource = %d\n", val, i, resource);
+
+      t_yield();
+      printf("  ** [%d READ %d] returns from t_yield()\n", val, i);
+      res_after = resource;
+
+      if (res_before != res_after) {
+
+         fprintf(stderr, "[THREAD %d] error in the semaphore program \n", val);
+         exit(-1);
+      }
+
+      sem_signal(s);
+   }
+
+   t_terminate () ;
+}
+
+void write_function(int val) 
+{
+   long i, j ;
+
+   for (i = 0; i < 5; i++) {
+      printf("I am WRITE thread %d (%d)\n", val, i);
+
+      sem_wait(s);
+            
+      resource = rand() % 100;      
+      printf("  [%d WRITE %d] resource = %d\n", val, i, resource);
+
+      sem_signal(s);
+
       t_yield();
    }
 
-   printf("Thread %d is done...\n", thr_id);
    t_terminate();
 }
 
-int main(void)
-{
+int main(void) {
+
    int i;
 
    t_init();
-   t_create(function, 1, 1);
-   printf("This is main(1)...\n");
-   t_create(function, 2, 1);
-   printf("This is main(2)...\n");
-   t_create(function, 3, 1);
+   sem_init(&s, 1);
 
-   for (i = 0; i < 4; i++) {
-      printf("This is main(3)[%d]...\n", i);
+   t_create(write_function, 1, 1);
+   t_create(write_function, 2, 1);
+   t_create(read_function, 11, 1);
+   t_create(read_function, 22, 1);
+   t_create(write_function, 3, 1);
+   t_create(write_function, 4, 1);
+   t_create(read_function, 33, 1);
+   t_create(read_function, 44, 1);
+  
+   for (i = 0; i < 60; i++) {
+      printf("I am main thread (%d)...\n", i);
       t_yield();
    }
 
-   printf("Begin shutdown...\n");
+   sem_destroy(&s);
    t_shutdown();
-   printf("Done with shutdown...\n");
 
    return 0;
 }

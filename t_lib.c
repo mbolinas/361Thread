@@ -258,7 +258,7 @@ void sem_destroy(sem_t **sp){
 	*/
 	while(tmp != NULL){
 		next = tmp->next;
-		free(tmp->thread_context.uc_stack.ss_sp);
+		free(tmp->thread_context->uc_stack.ss_sp);
 		free(tmp->thread_context);
 		free(tmp);
 		tmp = next;
