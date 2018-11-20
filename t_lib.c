@@ -142,6 +142,9 @@ void t_terminate(){
 }
 
 int sem_init(sem_t **sp, int sem_count){
+	/*
+	we assume that sp was already malloc'd in user's code
+	*/
 	*sp = malloc(sizeof(sem_t));
 	(*sp)->count = sem_count;
 	(*sp)->q = NULL;
@@ -155,12 +158,20 @@ void sem_wait(sem_t *sp){
 	sp->count = sp->count - 1;
 	if(sp->count < 0){
 		if(ready == NULL){
-			//this should never happen unless the example code is bad
-			//this should only occur due to user error
+			/*
+			this should never happen unless the example code is bad
+			this should only occur due to user error
+			*/
 			printf("sem_wait() failed! no other thread to switch to\n");
-
 		}
 		else if(sp->q == NULL){
+			/*
+			our semaphore queue is empty, so take running and make it
+			the head of semaphore queue
+			then swapcontext on:
+			head of queue, the currently running thread
+			head of ready, the next thread in the queue
+			*/
 			tcb *old, *new;
 			old = running;
 			new = ready;
@@ -172,6 +183,12 @@ void sem_wait(sem_t *sp){
 			swapcontext(old->thread_context, new->thread_context);
 		}
 		else{
+			/*
+			add running to the end of the semaphore queue
+			then swapcontext on:
+			tail of queue, the currently running thread
+			head of ready, the next thread in the queue
+			*/
 			tcb *old, *new, *end;
 			old = running;
 			new = ready;
@@ -200,7 +217,16 @@ void sem_signal(sem_t *sp){
 		tcb *end;
 		end = ready;
 		tcb *tmp = sp->q;
+		/*
+		if tmp is NULL, we have no threads in the queue to wake up.
+		usually caused by a semaphore initialized with a negative count.
+		will segfault without this check
+		*/
 		if(tmp != NULL){
+			/*
+			take the head of the sem queue, insert at end of ready queue
+			(or head, if the queue was NULL)
+			*/
 			sp->q = sp->q->next;
 			if(end == NULL){
 				end = tmp;
@@ -225,7 +251,11 @@ void sem_destroy(sem_t **sp){
 
 	tcb *tmp = (*sp)->q;
 	tcb *next;
-
+	/*
+	free every tcb in the semaphore's queue.
+	we can't just add them into the ready queue because
+	it can cause data races.
+	*/
 	while(tmp != NULL){
 		next = tmp->next;
 		free(tmp->thread_context.uc_stack.ss_sp);
@@ -235,7 +265,7 @@ void sem_destroy(sem_t **sp){
 	}
 
 	free(*sp);
-	free(sp);
+	//free(sp);
 
 }
 
