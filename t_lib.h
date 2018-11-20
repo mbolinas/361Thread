@@ -13,6 +13,7 @@ void t_terminate();
 void t_shutdown();
 void force_yield();
 
+
 struct tcb{
 	int thread_id;
 	int thread_priority;
@@ -21,3 +22,10 @@ struct tcb{
 };
 
 typedef struct tcb tcb;
+
+struct sem_t{
+	int count;
+	tcb *q;
+};
+
+typedef struct sem_t sem_t;

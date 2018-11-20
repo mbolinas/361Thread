@@ -1,7 +1,7 @@
 /*
 Marc Bolinas and Brian Phillips
 CISC361
-11/2/2018
+11/19/2018
 */
 
 #include "t_lib.h"
@@ -139,7 +139,73 @@ void t_terminate(){
 		setcontext(running->thread_context);
 
 	}
+}
+
+int sem_init(sem_t **sp, int sem_count){
+	sp = malloc(sizeof(sem_t *));
+	*sp = malloc(sizeof(sem_t));
+	(*sp)->count = sem_count;
+	(*sp)->q = NULL;
+
+	return 0;
+}
+
+void sem_wait(sem_t *sp){
+	//stop interrupts
+
+	sp->count = sp->count - 1;
+	if(sp->count < 0){
+		//place process in sp->queue
+		//block process and allow interrupts
+	}
 
 
+
+	//allow interrupts
+}
+
+void sem_signal(sem_t *sp){
+	//stop interrupts
+
+	sp->count = sp->count + 1;
+	if(sp->count <= 0){
+		//remove a process from sp->queue
+		//place process onto the ready list
+	}
+
+
+
+	//allow interrupts	
+}
+
+void sem_destroy(sem_t **sp){
+
+	tcb *tmp = (*sp)->q;
+	tcb *next;
+
+	while(tmp != NULL){
+		next = tmp->next;
+		free(tmp->thread_context.uc_stack.ss_sp);
+		free(tmp->thread_context);
+		free(tmp);
+		tmp = next;
+	}
+
+	free(*sp);
+	free(sp);
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
