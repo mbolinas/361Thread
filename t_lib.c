@@ -43,7 +43,7 @@ void t_init(){
 	tmp->thread_id = 0;
 	tmp->next = NULL;
 	tmp->thread_context = malloc(sizeof(ucontext_t));
-
+	mbox_create(&(tmp->mbox));
 
   	getcontext(tmp->thread_context);    /* let tmp be the context of main() */
 	running = tmp;
@@ -57,7 +57,7 @@ void t_create(void (*fct)(int), int id, int pri){
 	tmp->next = NULL;
 	tmp->thread_priority = pri;
 	tmp->thread_id = id;
-
+	mbox_create(&(tmp->mbox));
 	tcb *end;
 	end = ready;
 
@@ -335,7 +335,13 @@ void mbox_withdraw(mbox *mb, char *msg, int *len){
 	}
 }
 
+void send(int tid, char *msg, int len){
 
+}
+
+void receive(int *tid, char *msg, int *len){
+
+}
 
 
 
