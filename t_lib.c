@@ -282,7 +282,7 @@ void mbox_destroy(mbox **mb){
 		free((*mb)->msg);
 	if((*mb)->mbox_sem != NULL)
 		free((*mb)->mbox_sem);
-	free((*mb);
+	free((*mb));
 }
 
 
