@@ -293,7 +293,7 @@ void mbox_deposit(mbox *mb, char *msg, int len){
 	mn->next = NULL;
 	mn->message = malloc(sizeof(char) * len);
 	strcpy(mn->message, msg);
-	printf("copied: [%s]\n", mn->message);
+	//printf("copied: [%s]\n", mn->message);
 
 	int count = 0;
 
@@ -310,7 +310,7 @@ void mbox_deposit(mbox *mb, char *msg, int len){
 		tmp->next = mn;
 	}
 
-	printf("deposited, pos = %d\n", count);
+	//printf("deposited, pos = %d\n", count);
 }
 
 void mbox_withdraw(mbox *mb, char *msg, int *len){
