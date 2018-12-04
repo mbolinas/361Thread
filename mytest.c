@@ -17,6 +17,8 @@ int main(void) {
    printf("box created\n");
    char wow[] = "wow";
    mbox_deposit(mybox, &wow, 3);
+   mbox_deposit(mybox, &wow, 3);
+   mbox_deposit(mybox, &wow, 3);
    mbox_destroy(&mybox);
    printf("box destroyed\n");
    t_shutdown();

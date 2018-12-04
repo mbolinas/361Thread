@@ -288,10 +288,29 @@ void mbox_destroy(mbox **mb){
 void mbox_deposit(mbox *mb, char *msg, int len){
 	message_node *mn = malloc(sizeof(message_node));
 	mn->len = len;
+	mn->sender = 0;
+	mn->receiver = 0;
 	mn->next = NULL;
 	mn->message = malloc(sizeof(char) * len);
 	strcpy(mn->message, msg);
-	printf("copied: %s\n", mn->message);
+	printf("copied: [%s]\n", mn->message);
+
+	int count = 0;
+
+	if(mb->msg == NULL){
+		mb->msg = mn;
+	}
+	else{
+		count++;
+		message_node *tmp = mb->msg;
+		while(tmp->next != NULL){
+			tmp = tmp->next;
+			count++;
+		}
+		tmp->next = mn;
+	}
+
+	printf("deposited, pos = %d\n", count);
 }
 
 
