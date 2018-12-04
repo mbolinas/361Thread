@@ -19,6 +19,14 @@ int main(void) {
    mbox_deposit(mybox, &wow, 3);
    mbox_deposit(mybox, &wow, 3);
    mbox_deposit(mybox, &wow, 3);
+
+   mbox_withdraw(mybox, &wow, &i);
+   printf("withdrew: %s\n", &wow);
+      mbox_withdraw(mybox, &wow, &i);
+   printf("withdrew: %s\n", &wow);
+      mbox_withdraw(mybox, &wow, &i);
+   printf("withdrew: %s\n", &wow);
+
    mbox_destroy(&mybox);
    printf("box destroyed\n");
    t_shutdown();

@@ -313,7 +313,19 @@ void mbox_deposit(mbox *mb, char *msg, int len){
 	printf("deposited, pos = %d\n", count);
 }
 
-
+void mbox_withdraw(mbox *mb, char *msg, int *len){
+	if(mb->msg == NULL){
+		*len = 0;
+	}
+	else{
+		*len = mb->msg->len;
+		strcpy(msg, mb->msg->message);
+		free(mb->msg->message);
+		message_node *tmp = mb->msg;
+		mb->msg = mb->msg->next;
+		free(tmp);
+	}
+}
 
 
 
