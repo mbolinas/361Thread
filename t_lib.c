@@ -278,7 +278,11 @@ int mbox_create(mbox **mb){
 }
 
 void mbox_destroy(mbox **mb){
-
+	if((*mb)->msg != NULL)
+		free((*mb)->msg);
+	if((*mb)->mbox_sem != NULL)
+		free((*mb)->mbox_sem);
+	free(mb);
 }
 
 

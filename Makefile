@@ -41,4 +41,4 @@ mytest: mytest.o t_lib.a Makefile
 	${CC} ${CFLAGS} mytest.o t_lib.a -o mytest
 
 clean:
-	rm -f t_lib.a ${EXECS} ${LIBOBJS} ${TSTOBJS} 
+	rm -f t_lib.a ${EXECS} ${LIBOBJS} ${TSTOBJS} *~

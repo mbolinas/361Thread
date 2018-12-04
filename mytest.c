@@ -14,7 +14,9 @@ int main(void) {
    
    mbox *mybox;
    mbox_create(&mybox);
-
+   printf("box created\n");
+   mbox_destroy(&mybox);
+   printf("box destroyed\n");
    t_shutdown();
 
    return 0;
