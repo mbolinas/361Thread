@@ -270,6 +270,16 @@ void sem_destroy(sem_t **sp){
 
 
 
+int mbox_create(mbox **mb){
+	*mb = malloc(sizeof(mbox));
+	(*mb)->msg = NULL;
+	(*mb)->mbox_sem = NULL;
+	return 0;
+}
+
+void mbox_destroy(mbox **mb){
+
+}
 
 
 

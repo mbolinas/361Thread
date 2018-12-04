@@ -29,3 +29,25 @@ struct sem_t{
 };
 
 typedef struct sem_t sem_t;
+
+struct message_node{
+	char *message;
+	int len;
+	int sender;
+	int receiver;
+	struct message_node *next;
+};
+
+typedef struct message_node message_node;
+
+struct mbox{
+	struct message_node *msg;
+	sem_t *mbox_sem;
+};
+
+typedef struct mbox mbox;
+
+
+
+
+
