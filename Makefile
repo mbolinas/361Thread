@@ -34,5 +34,11 @@ test00.o: test00.c ud_thread.h Makefile
 test00: test00.o t_lib.a Makefile
 	${CC} ${CFLAGS} test00.o t_lib.a -o test00
 
+mytest.o: mytest.c ud_thread.h Makefile
+	${CC} ${CFLAGS} -c mytest.c
+
+mytest: mytest.o t_lib.a Makefile
+	${CC} ${CFLAGS} mytest.o t_lib.a -o mytest
+
 clean:
 	rm -f t_lib.a ${EXECS} ${LIBOBJS} ${TSTOBJS} 
