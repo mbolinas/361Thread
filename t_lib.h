@@ -18,6 +18,7 @@ struct tcb{
 	int thread_id;
 	int thread_priority;
 	ucontext_t *thread_context;
+	struct mbox *mbox;
 	struct tcb *next;
 };
 
