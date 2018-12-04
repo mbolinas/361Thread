@@ -278,8 +278,16 @@ int mbox_create(mbox **mb){
 }
 
 void mbox_destroy(mbox **mb){
-	if((*mb)->msg != NULL)
-		free((*mb)->msg);
+	if((*mb)->msg != NULL){
+
+		message_node *tmp = (*mb)->msg;
+		while(tmp != NULL){
+			tmp = tmp->next;
+			free((*mb)->msg->message);
+			free((*mb)->msg);
+			(*mb)->msg = tmp;
+		}
+	}
 	if((*mb)->mbox_sem != NULL)
 		free((*mb)->mbox_sem);
 	free((*mb));
