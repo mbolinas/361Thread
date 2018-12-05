@@ -375,6 +375,8 @@ void send(int tid, char *msg, int len){
 		}
 		//we only want to signal if there are threads waiting for a receive, aka count < 0
 		//otherwise, a thread calling sem_wait might not block when in receive()
+		sem_signal(depositbox->mbox_sem);
+
 		if(depositbox->mbox_sem->count < 0){
 			sem_signal(depositbox->mbox_sem);
 		}
@@ -398,7 +400,38 @@ void receive(int *tid, char *msg, int *len){
 		free(tmp);
 	}
 	else{
+		int found = 0;
+		while(found == 0){
+			message_node *tmp = receivebox->msg;
 
+			if(tmp->sender == tid){
+				found = 1;
+				*len = tmp->len;
+				strcpy(msg, tmp->message);
+				free(tmp->message);
+				receivebox->msg = receivebox->msg->next;
+				free(tmp);
+			}
+
+			while(found == 0 && tmp != NULL){
+				if(tmp->next->sender == tid){
+					found = 1;
+					*len = tmp->next->len;
+					strcpy(msg, tmp->next->message);
+					free(tmp->next->message);
+					message_node *deleteMe = tmp->next;
+					tmp->next = tmp->next->next;
+					free(deleteMe);
+				}
+				else{
+					tmp = tmp->next;
+				}
+			}
+			if(found == 0){
+				depositbox->mbox_sem->count = 0;
+				sem_wait(receivebox->mbox_sem);
+			}
+		}
 	}
 }
 
