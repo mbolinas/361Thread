@@ -418,7 +418,6 @@ void receive(int *tid, char *msg, int *len){
 		*tid = receivebox->msg->sender;
 		strcpy(msg, receivebox->msg->message);
 		receivebox->msg->message = NULL;
-		receivebox->msg->len = -1;
 		free(receivebox->msg->message);
 		message_node *tmp = receivebox->msg;
 		receivebox->msg = receivebox->msg->next;
@@ -436,7 +435,6 @@ void receive(int *tid, char *msg, int *len){
 				found = 1;
 				*len = tmp->len;
 				*tid = tmp->sender;
-				tmp->len = -1;
 				strcpy(msg, tmp->message);
 				tmp->message = NULL;
 				free(tmp->message);
@@ -451,7 +449,6 @@ void receive(int *tid, char *msg, int *len){
 					found = 1;
 					*len = tmp->next->len;
 					*tid = tmp->next->sender;
-					tmp->next->len = -1;
 					strcpy(msg, tmp->next->message);
 					tmp->next->message = NULL;
 					free(tmp->next->message);
@@ -523,7 +520,9 @@ void block_send(int tid, char *msg, int len){
 		while(mn != NULL){
 			sem_wait(depositbox->blocksend_sem);
 			printf("[%d] awoken from blocksend!\n", running->thread_id);
-			printf("mn->len = %d\n", mn->len);
+			if(mn->len != len){
+				mn = NULL;
+			}
 		}
 		printf("exiting blocksend...\n");
 		/*
