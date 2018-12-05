@@ -350,7 +350,7 @@ void send(int tid, char *msg, int len){
 		}
 	}
 	if(depositbox != NULL){
-		printf("found %d's depobox\n", tid);
+		//printf("found %d's depobox\n", tid);
 		message_node *mn = malloc(sizeof(message_node));
 		mn->len = len;
 		mn->sender = running->thread_id; //the thread that's trying to send is the one currently running
@@ -358,9 +358,9 @@ void send(int tid, char *msg, int len){
 		mn->next = NULL;
 		mn->message = malloc(sizeof(char) * len);
 		strcpy(mn->message, msg);
-
+		printf("added message from: %d\n", mn->sender);
 		if(depositbox->msg == NULL){
-			printf("added\n");
+			//printf("added\n");
 			depositbox->msg = mn;
 		}
 		else{
@@ -371,7 +371,7 @@ void send(int tid, char *msg, int len){
 				//count++;
 			}
 			tmp->next = mn;
-			printf("added\n");
+			//printf("added\n");
 		}
 		//we only want to signal if there are threads waiting for a receive, aka count < 0
 		//otherwise, a thread calling sem_wait might not block when in receive()
@@ -404,7 +404,7 @@ void receive(int *tid, char *msg, int *len){
 		int found = 0;
 		while(found == 0){
 			message_node *tmp = receivebox->msg;
-
+			printf("tmp->sender = %d\n" tmp->sender);
 			if(tmp->sender == tid){
 				printf("mkay\n");
 				found = 1;
