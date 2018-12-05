@@ -517,9 +517,12 @@ void block_send(int tid, char *msg, int len){
 		//we only want to signal if there are threads waiting for a receive, aka count < 0
 		//otherwise, a thread calling sem_wait might not block when in receive()
 		sem_signal(depositbox->mbox_sem);
-		while(mn->len != len){
+		while(mn != NULL){
 			sem_wait(depositbox->blocksend_sem);
 			printf("[%d] awoken from blocksend!\n", running->thread_id);
+			if(mn->len == NULL){
+				mn = NULL;
+			}
 		}
 		printf("exiting blocksend...\n");
 		/*
