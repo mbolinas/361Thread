@@ -428,7 +428,7 @@ void receive(int *tid, char *msg, int *len){
 				}
 			}
 			if(found == 0){
-				depositbox->mbox_sem->count = 0;
+				receivebox->mbox_sem->count = 0;
 				sem_wait(receivebox->mbox_sem);
 			}
 		}
