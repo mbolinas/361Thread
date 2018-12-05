@@ -388,7 +388,7 @@ void send(int tid, char *msg, int len){
 void receive(int *tid, char *msg, int *len){
 	mbox *receivebox = NULL;
 	receivebox = running->mbox;	//the thread that's trying to get it's mailbox is the one that's currently running
-	if(tid == 0){
+	if(*tid == 0){
 		while(receivebox->msg == NULL){
 			sem_wait(receivebox->mbox_sem);
 		}
@@ -405,7 +405,7 @@ void receive(int *tid, char *msg, int *len){
 		while(found == 0){
 			message_node *tmp = receivebox->msg;
 			printf("tmp->sender = %d\n", tmp->sender);
-			if(tmp->sender == tid){
+			if(tmp->sender == *tid){
 				printf("mkay\n");
 				found = 1;
 				*len = tmp->len;
@@ -417,7 +417,7 @@ void receive(int *tid, char *msg, int *len){
 
 			while(found == 0 && tmp != NULL){
 				printf("bitch lasangna\n");
-				if(tmp->next->sender == tid){
+				if(tmp->next->sender == *tid){
 					found = 1;
 					*len = tmp->next->len;
 					strcpy(msg, tmp->next->message);
