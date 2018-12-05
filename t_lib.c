@@ -518,6 +518,7 @@ void block_send(int tid, char *msg, int len){
 			sem_wait(depositbox->blocksend_sem);
 			printf("[%d] awoken from blocksend!\n", running->thread_id);
 		}
+		printf("exiting blocksend...\n");
 		/*
 		if(depositbox->mbox_sem->count < 0){
 			sem_signal(depositbox->mbox_sem);
