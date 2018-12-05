@@ -44,6 +44,7 @@ typedef struct message_node message_node;
 struct mbox{
 	struct message_node *msg;
 	sem_t *mbox_sem;
+	sem_t *blocksend_sem;
 };
 
 typedef struct mbox mbox;
