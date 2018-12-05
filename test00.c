@@ -23,6 +23,7 @@ void producer(int val)
 
 void consumer(int val) 
 {
+   printf("hello????\n");
    int len, who = 0;
    char *msg;
 
