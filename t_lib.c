@@ -1,20 +1,36 @@
 /*
 Marc Bolinas and Brian Phillips
 CISC361
-11/19/2018
+12/4/2018
 */
+
+/*
+IMPORTANT NOTICE:
+the order of thread execution is DIFFERENT than in example tests.
+this is because our semaphore implementation takes threads out of
+both the running and ready queues, while the example tests assume that
+the threads stay in the ready queue, but in an 'unrunnable' state.
+
+our semaphore implementation is consistent with what Prof. Shen asked for in
+phase 3
+ */
 
 #include "t_lib.h"
 
 
 tcb *running = NULL;
 tcb *ready = NULL;
+
+/*
+contains a list of all threads currently stuck in sem_wait()
+this list is used for threads in send() to find the mailbox of a thread
+stuck in a semaphore, because usually a thread in a semaphore is not found
+in either running or ready queues
+ */
 tcb *blockedthreads = NULL;
 
 
 void t_yield(){
-	//printf("??\n");
-	//fflush(stdout);
 	if(running != NULL && ready != NULL){
 		tcb *end;
 		end = ready;
@@ -30,7 +46,6 @@ void t_yield(){
 		running = ready;
 		ready = ready->next;
 		running->next = NULL;
-		//printf("yeet\n");
 		swapcontext(old->thread_context, new->thread_context);
 	}
 }
@@ -287,8 +302,10 @@ void sem_destroy(sem_t **sp){
 
 }
 
-
-
+/*
+create a new mailbox with each respective field
+set to NULL or instantiated to 0
+ */
 int mbox_create(mbox **mb){
 	*mb = malloc(sizeof(mbox));
 	(*mb)->msg = NULL;
@@ -297,10 +314,12 @@ int mbox_create(mbox **mb){
 	sem_init(&(*mb)->blocksend_sem, 0);
 	return 0;
 }
-
+/*
+destroy each message individually, then call sem_destroy() on
+both of the mailbox's semaphores
+ */
 void mbox_destroy(mbox **mb){
 	if((*mb)->msg != NULL){
-
 		message_node *tmp = (*mb)->msg;
 		while(tmp != NULL){
 			tmp = tmp->next;
@@ -316,6 +335,10 @@ void mbox_destroy(mbox **mb){
 	free((*mb));
 }
 
+/*
+create a new message_node and append it to the end of the 
+mailbox list of messages
+ */
 void mbox_deposit(mbox *mb, char *msg, int len){
 	message_node *mn = malloc(sizeof(message_node));
 	mn->len = len;
@@ -338,6 +361,10 @@ void mbox_deposit(mbox *mb, char *msg, int len){
 	}
 }
 
+/*
+take a message out of the mailbox, removing the message
+from the mailbox's list in the process
+ */
 void mbox_withdraw(mbox *mb, char *msg, int *len){
 	if(mb->msg == NULL){
 		*len = 0;
@@ -352,19 +379,38 @@ void mbox_withdraw(mbox *mb, char *msg, int *len){
 	}
 }
 
+/*
+find the mailbox belonging to the target thread,
+create the message_node and add it to the end of the
+mailbox's message list
+ */
 void send(int tid, char *msg, int len){
 	mbox *depositbox = NULL;
+	/*
+	find the correct mailbox, in either the
+	running, ready, or blockedthread lists
+	 */
 	if(running != NULL && running->thread_id == tid){
 		depositbox = running->mbox;
 	}
 	else{
 		tcb *tmp = ready;
-		while(tmp != NULL){
+		while(tmp != NULL){	/* search through the ready queue */
+			if(tmp->thread_id == tid)
+				depositbox = tmp->mbox;
+			tmp = tmp->next;
+		}
+		if(depositbox == NULL){	/* search through the blockedthreads list */
+			tmp = blockedthreads;
 			if(tmp->thread_id == tid)
 				depositbox = tmp->mbox;
 			tmp = tmp->next;
 		}
 	}
+	/*
+	it's possible the user tried sending a message to a
+	non-existant thread, meaning there is no mailbox at that TID
+	 */
 	if(depositbox != NULL){
 		message_node *mn = malloc(sizeof(message_node));
 		mn->len = len;
@@ -374,10 +420,10 @@ void send(int tid, char *msg, int len){
 		mn->message = malloc(sizeof(char) * len);
 		strcpy(mn->message, msg);
 
-		if(depositbox->msg == NULL){
+		if(depositbox->msg == NULL){	/* set message as the new head */
 			depositbox->msg = mn;
 		}
-		else{
+		else{	/* append to end */
 			message_node *tmp = depositbox->msg;
 			while(tmp->next != NULL){
 				tmp = tmp->next;
@@ -395,11 +441,15 @@ void send(int tid, char *msg, int len){
 		printf("(Attempted to send message to thread that does not exist)\n");
 }
 
+/*
+thread searches through it's own mailbox to find a message sent by TID
+if not found, it will wait() until there exists a message by that TID
+ */
 void receive(int *tid, char *msg, int *len){
 	mbox *receivebox = NULL;
 	receivebox = running->mbox;
 	if(*tid == 0){
-		while(receivebox->msg == NULL){
+		while(receivebox->msg == NULL){	/* not a single message, wait for one */
 			sem_wait(receivebox->mbox_sem);
 		}
 		*len = receivebox->msg->len;
@@ -410,14 +460,16 @@ void receive(int *tid, char *msg, int *len){
 		message_node *tmp = receivebox->msg;
 		receivebox->msg = receivebox->msg->next;
 		free(tmp);
-		sem_signal(receivebox->blocksend_sem);
+		sem_signal(receivebox->blocksend_sem);	/* tell any threads in block_send() to wake */
 	}
 	else{
 		int found = 0;
 		while(found == 0){
 			message_node *tmp = receivebox->msg;
-			//printf("tmp->sender = %d\n", tmp->sender);
 			if(tmp != NULL && tmp->sender == *tid){
+					/*
+					we found the message, copy data and exit while(found == 0) loop
+					 */
 				found = 1;
 				*len = tmp->len;
 				*tid = tmp->sender;
@@ -426,11 +478,14 @@ void receive(int *tid, char *msg, int *len){
 				free(tmp->message);
 				receivebox->msg = receivebox->msg->next;
 				free(tmp);
-				sem_signal(receivebox->blocksend_sem);
+				sem_signal(receivebox->blocksend_sem);	/* wake up block_send() threads */
 			}
 
 			while(found == 0 && tmp != NULL){
 				if(tmp->next->sender == *tid){
+						/*
+						we found the message, copy data and exit while(found == 0) loop
+						 */
 					found = 1;
 					*len = tmp->next->len;
 					*tid = tmp->next->sender;
@@ -440,13 +495,17 @@ void receive(int *tid, char *msg, int *len){
 					message_node *deleteMe = tmp->next;
 					tmp->next = tmp->next->next;
 					free(deleteMe);
-					sem_signal(receivebox->blocksend_sem);
+					sem_signal(receivebox->blocksend_sem);	/* wake up block_send() threads */
 				}
 				else{
 					tmp = tmp->next;
 				}
 			}
 			if(found == 0){
+				/*
+				message not found, set semaphore->count = 0 to force a wait, and
+				call wait() on said semaphore
+				 */
 				if(receivebox->mbox_sem->count > 0)
 					receivebox->mbox_sem->count = 0;
 				sem_wait(receivebox->mbox_sem);
@@ -454,9 +513,17 @@ void receive(int *tid, char *msg, int *len){
 		}
 	}
 }
-
+/*
+blocking version of the earlier send() function
+blocks via a second semaphore found in each mailbox.
+this second semaphore, blocksend_sem, is signaled every time
+receive() is called on it's mailbox
+ */
 void block_send(int tid, char *msg, int len){
 	mbox *depositbox = NULL;
+	/*
+	find the mailbox to send to, just like in send()
+	 */
 	if(running != NULL && running->thread_id == tid){
 		depositbox = running->mbox;
 	}
@@ -475,6 +542,9 @@ void block_send(int tid, char *msg, int len){
 		}
 	}
 	if(depositbox != NULL){
+		/*
+		create the message and append to end of list, just like in send()
+		 */
 		message_node *mn = malloc(sizeof(message_node));
 		mn->len = len;
 		mn->sender = running->thread_id; 
@@ -482,7 +552,6 @@ void block_send(int tid, char *msg, int len){
 		mn->next = NULL;
 		mn->message = malloc(sizeof(char) * len);
 		strcpy(mn->message, msg);
-		//printf("added message from: %d\n", mn->sender);
 		if(depositbox->msg == NULL){
 			depositbox->msg = mn;
 		}
@@ -513,6 +582,10 @@ void block_send(int tid, char *msg, int len){
 		printf("(Attempted to send message to thread that does not exist)\n");
 }
 
+/*
+receive() is blocking by nature, so block_receive() functions exactly like
+regular receive()
+ */
 void block_receive(int *tid, char *msg, int *len){
 	receive(tid, msg, len);
 }
