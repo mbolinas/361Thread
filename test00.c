@@ -1,5 +1,5 @@
 /* 
- * Test Program #09 - Rendezvous: blocking Send/Receive
+ * Test Program #11 - Rendezvous: blocking Send/Receive
  */
 
 #include <stdio.h>
@@ -13,6 +13,8 @@ void producer(int val) {
    printf("P: Before block_send()...\n");
    block_send(2, msg, strlen(msg));
    printf("P: After block_send()...\n");
+
+   t_yield();
 
    t_terminate();
 }
@@ -37,15 +39,12 @@ int main(void) {
 
    t_init();
 
-   t_create(consumer, 2, 1);
    t_create(producer, 1, 1);
+   t_create(consumer, 2, 1);
 
    t_yield();
-   printf("I am main 1...\n");
    t_yield();
-   printf("I am main 2...\n");
    t_yield();
-   printf("I am main 3...\n");
 
    t_shutdown();
 
