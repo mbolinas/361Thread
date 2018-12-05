@@ -410,7 +410,7 @@ void receive(int *tid, char *msg, int *len){
 		while(found == 0){
 			message_node *tmp = receivebox->msg;
 			//printf("tmp->sender = %d\n", tmp->sender);
-			if(tmp->sender == *tid){
+			if(tmp != NULL && tmp->sender == *tid){
 				printf("mkay\n");
 				found = 1;
 				*len = tmp->len;
