@@ -417,6 +417,7 @@ void receive(int *tid, char *msg, int *len){
 		*len = receivebox->msg->len;
 		*tid = receivebox->msg->sender;
 		strcpy(msg, receivebox->msg->message);
+		receivebox->msg->message = NULL;
 		free(receivebox->msg->message);
 		message_node *tmp = receivebox->msg;
 		receivebox->msg = receivebox->msg->next;
@@ -435,6 +436,7 @@ void receive(int *tid, char *msg, int *len){
 				*len = tmp->len;
 				*tid = tmp->sender;
 				strcpy(msg, tmp->message);
+				tmp->message = NULL;
 				free(tmp->message);
 				receivebox->msg = receivebox->msg->next;
 				free(tmp);
@@ -448,6 +450,7 @@ void receive(int *tid, char *msg, int *len){
 					*len = tmp->next->len;
 					*tid = tmp->next->sender;
 					strcpy(msg, tmp->next->message);
+					tmp->next->message = NULL;
 					free(tmp->next->message);
 					message_node *deleteMe = tmp->next;
 					tmp->next = tmp->next->next;
