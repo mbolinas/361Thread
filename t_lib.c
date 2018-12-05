@@ -274,6 +274,7 @@ int mbox_create(mbox **mb){
 	*mb = malloc(sizeof(mbox));
 	(*mb)->msg = NULL;
 	(*mb)->mbox_sem = NULL;
+	sem_init(&(*mb)->mbox_sem, 0);
 	return 0;
 }
 
@@ -303,17 +304,17 @@ void mbox_deposit(mbox *mb, char *msg, int len){
 	strcpy(mn->message, msg);
 	//printf("copied: [%s]\n", mn->message);
 
-	int count = 0;
+	//int count = 0;
 
 	if(mb->msg == NULL){
 		mb->msg = mn;
 	}
 	else{
-		count++;
+		//count++;
 		message_node *tmp = mb->msg;
 		while(tmp->next != NULL){
 			tmp = tmp->next;
-			count++;
+			//count++;
 		}
 		tmp->next = mn;
 	}
@@ -336,11 +337,56 @@ void mbox_withdraw(mbox *mb, char *msg, int *len){
 }
 
 void send(int tid, char *msg, int len){
+	mbox *depositbox = NULL;
+	if(running != NULL && running->thread_id == tid){
+		depositbox = running->mbox;
+	}
+	else{
+		tcb *tmp = ready;
+		while(tmp != NULL){
+			if(tmp->thread_id == tid)
+				depositbox = tmp->mbox;
+			tmp = tmp->next;
+		}
+	}
+	if(depositbox != NULL){
+		printf("found %d's depobox\n", tid);
+		message_node *mn = malloc(sizeof(message_node));
+		mn->len = len;
+		mn->sender = running->thread_id; //the thread that's trying to send is the one currently running
+		mn->receiver = tid;
+		mn->next = NULL;
+		mn->message = malloc(sizeof(char) * len);
+		strcpy(mn->message, msg);
 
+		if(depositbox->msg == NULL){
+			printf("added\n");
+			depositbox->msg = mn;
+		}
+		else{
+			//count++;
+			message_node *tmp = depositbox->msg;
+			while(tmp->next != NULL){
+				tmp = tmp->next;
+				//count++;
+			}
+			tmp->next = mn;
+			printf("added\n");
+		}
+	}
+	else
+		printf("(Attempted to send message to thread that does not exist)\n");
 }
 
 void receive(int *tid, char *msg, int *len){
+	mbox *receivebox = NULL;
+	receivebox = running->mbox;	//the thread that's trying to get it's mailbox is the one that's currently running
+	if(tid == 0){
 
+	}
+	else{
+
+	}
 }
 
 
