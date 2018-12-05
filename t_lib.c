@@ -9,7 +9,7 @@ CISC361
 
 tcb *running = NULL;
 tcb *ready = NULL;
-
+tcb *blockedthreads = NULL;
 
 
 void t_yield(){
@@ -173,6 +173,8 @@ void sem_wait(sem_t *sp){
 			*/
 			tcb *old, *new;
 			old = running;
+			old->next = blockedthreads;
+			blockedthreads = old;
 			new = ready;
 			sp->q = running;
 			running = ready;
@@ -190,6 +192,8 @@ void sem_wait(sem_t *sp){
 			*/
 			tcb *old, *new, *end;
 			old = running;
+			old->next = blockedthreads;
+			blockedthreads = old;
 			new = ready;
 			end = sp->q;
 			while(end->next != NULL)
@@ -222,6 +226,21 @@ void sem_signal(sem_t *sp){
 		will segfault without this check
 		*/
 		if(tmp != NULL){
+			/*
+			remove tmp from the blockedthreads list
+			*/
+			if(tmp->thread_id == blockedthreads->thread_id){
+				blockedthreads = blockedthreads->next;
+			}
+			else{
+				tcb *tmp_bt = blockedthreads;
+				while(tmp_bt->next != NULL){
+					if(tmp_bt->next->thread_id == tmp->thread_id){
+						tmp_bt->next = tmp_bt->next->next;
+					}
+				}
+			}
+
 			/*
 			take the head of the sem queue, insert at end of ready queue
 			(or head, if the queue was NULL)
@@ -457,6 +476,12 @@ void block_send(int tid, char *msg, int len){
 	else{
 		tcb *tmp = ready;
 		while(tmp != NULL){
+			if(tmp->thread_id == tid)
+				depositbox = tmp->mbox;
+			tmp = tmp->next;
+		}
+		if(depositbox == NULL){
+			tmp = blockedthreads;
 			if(tmp->thread_id == tid)
 				depositbox = tmp->mbox;
 			tmp = tmp->next;
