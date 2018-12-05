@@ -373,6 +373,11 @@ void send(int tid, char *msg, int len){
 			tmp->next = mn;
 			printf("added\n");
 		}
+		//we only want to signal if there are threads waiting for a receive, aka count < 0
+		//otherwise, a thread calling sem_wait might not block when in receive()
+		if(depositbox->mbox_sem->count < 0){
+			sem_signal(depositbox->mbox_sem);
+		}
 	}
 	else
 		printf("(Attempted to send message to thread that does not exist)\n");
@@ -382,7 +387,15 @@ void receive(int *tid, char *msg, int *len){
 	mbox *receivebox = NULL;
 	receivebox = running->mbox;	//the thread that's trying to get it's mailbox is the one that's currently running
 	if(tid == 0){
-
+		while(receivebox->msg == NULL){
+			sem_wait(receivebox->mbox_sem);
+		}
+		*len = receivebox->msg->len;
+		strcpy(msg, receivebox->msg->message);
+		free(receivebox->msg->message);
+		message_node *tmp = receivebox->msg;
+		receivebox->msg = receivebox->msg->next;
+		free(tmp);
 	}
 	else{
 
