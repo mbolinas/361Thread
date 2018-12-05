@@ -405,13 +405,13 @@ void receive(int *tid, char *msg, int *len){
 		sem_signal(receivebox->blocksend_sem);
 	}
 	else{
-		//printf("ayyy\n");
+		printf("ayyy\n");
 		int found = 0;
 		while(found == 0){
 			message_node *tmp = receivebox->msg;
 			//printf("tmp->sender = %d\n", tmp->sender);
 			if(tmp->sender == *tid){
-				//printf("mkay\n");
+				printf("mkay\n");
 				found = 1;
 				*len = tmp->len;
 				*tid = tmp->sender;
@@ -423,7 +423,7 @@ void receive(int *tid, char *msg, int *len){
 			}
 
 			while(found == 0 && tmp != NULL){
-				//printf("bitch lasangna\n");
+				printf("bitch lasangna\n");
 				if(tmp->next->sender == *tid){
 					found = 1;
 					*len = tmp->next->len;
@@ -440,7 +440,7 @@ void receive(int *tid, char *msg, int *len){
 				}
 			}
 			if(found == 0){
-				//printf("you shouldn't be here\n");
+				printf("you shouldn't be here\n");
 				if(receivebox->mbox_sem->count > 0)
 					receivebox->mbox_sem->count = 0;
 				sem_wait(receivebox->mbox_sem);
