@@ -406,6 +406,7 @@ void receive(int *tid, char *msg, int *len){
 			message_node *tmp = receivebox->msg;
 
 			if(tmp->sender == tid){
+				printf("mkay\n");
 				found = 1;
 				*len = tmp->len;
 				strcpy(msg, tmp->message);
@@ -415,6 +416,7 @@ void receive(int *tid, char *msg, int *len){
 			}
 
 			while(found == 0 && tmp != NULL){
+				printf("bitch lasangna\n");
 				if(tmp->next->sender == tid){
 					found = 1;
 					*len = tmp->next->len;
@@ -429,6 +431,7 @@ void receive(int *tid, char *msg, int *len){
 				}
 			}
 			if(found == 0){
+				printf("you shouldn't be here\n");
 				receivebox->mbox_sem->count = 0;
 				sem_wait(receivebox->mbox_sem);
 			}
