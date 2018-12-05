@@ -393,6 +393,7 @@ void receive(int *tid, char *msg, int *len){
 			sem_wait(receivebox->mbox_sem);
 		}
 		*len = receivebox->msg->len;
+		*tid = receivebox->msg->sender;
 		strcpy(msg, receivebox->msg->message);
 		free(receivebox->msg->message);
 		message_node *tmp = receivebox->msg;
@@ -409,6 +410,7 @@ void receive(int *tid, char *msg, int *len){
 				//printf("mkay\n");
 				found = 1;
 				*len = tmp->len;
+				*tid = tmp->sender;
 				strcpy(msg, tmp->message);
 				free(tmp->message);
 				receivebox->msg = receivebox->msg->next;
@@ -420,6 +422,7 @@ void receive(int *tid, char *msg, int *len){
 				if(tmp->next->sender == *tid){
 					found = 1;
 					*len = tmp->next->len;
+					*tid = tmp->next->sender;
 					strcpy(msg, tmp->next->message);
 					free(tmp->next->message);
 					message_node *deleteMe = tmp->next;
