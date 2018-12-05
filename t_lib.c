@@ -400,6 +400,7 @@ void receive(int *tid, char *msg, int *len){
 		free(tmp);
 	}
 	else{
+		printf("ayyy\n");
 		int found = 0;
 		while(found == 0){
 			message_node *tmp = receivebox->msg;
