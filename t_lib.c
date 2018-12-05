@@ -442,6 +442,13 @@ void receive(int *tid, char *msg, int *len){
 	}
 }
 
+void block_send(int tid, char *msg, int len){
+
+}
+
+void block_receive(int *tid, char *msg, int *length){
+	receive(tid, msg, len);
+}
 
 
 
