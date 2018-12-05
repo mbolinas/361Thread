@@ -520,9 +520,7 @@ void block_send(int tid, char *msg, int len){
 		while(mn != NULL){
 			sem_wait(depositbox->blocksend_sem);
 			printf("[%d] awoken from blocksend!\n", running->thread_id);
-			if(mn->len == NULL){
-				mn = NULL;
-			}
+			printf("mn->len = %d\n", mn->len);
 		}
 		printf("exiting blocksend...\n");
 		/*
