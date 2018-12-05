@@ -310,7 +310,9 @@ void mbox_destroy(mbox **mb){
 		}
 	}
 	if((*mb)->mbox_sem != NULL)
-		free((*mb)->mbox_sem);
+		sem_destroy(&(*mb)->mbox_sem);
+	if((*mb)->blocksend_sem != NULL)
+		sem_destroy(&(*mb)->blocksend_sem);
 	free((*mb));
 }
 
@@ -324,22 +326,16 @@ void mbox_deposit(mbox *mb, char *msg, int len){
 	strcpy(mn->message, msg);
 	//printf("copied: [%s]\n", mn->message);
 
-	//int count = 0;
-
 	if(mb->msg == NULL){
 		mb->msg = mn;
 	}
 	else{
-		//count++;
 		message_node *tmp = mb->msg;
 		while(tmp->next != NULL){
 			tmp = tmp->next;
-			//count++;
 		}
 		tmp->next = mn;
 	}
-
-	//printf("deposited, pos = %d\n", count);
 }
 
 void mbox_withdraw(mbox *mb, char *msg, int *len){
@@ -370,38 +366,30 @@ void send(int tid, char *msg, int len){
 		}
 	}
 	if(depositbox != NULL){
-		//printf("found %d's depobox\n", tid);
 		message_node *mn = malloc(sizeof(message_node));
 		mn->len = len;
-		mn->sender = running->thread_id; //the thread that's trying to send is the one currently running
+		mn->sender = running->thread_id; 
 		mn->receiver = tid;
 		mn->next = NULL;
 		mn->message = malloc(sizeof(char) * len);
 		strcpy(mn->message, msg);
-		//printf("added message from: %d\n", mn->sender);
+
 		if(depositbox->msg == NULL){
-			//printf("added\n");
 			depositbox->msg = mn;
 		}
 		else{
-			//count++;
 			message_node *tmp = depositbox->msg;
 			while(tmp->next != NULL){
 				tmp = tmp->next;
-				//count++;
 			}
 			tmp->next = mn;
-			//printf("added\n");
-		}
-		//we only want to signal if there are threads waiting for a receive, aka count < 0
-		//otherwise, a thread calling sem_wait might not block when in receive()
-		sem_signal(depositbox->mbox_sem);
 
-		/*
-		if(depositbox->mbox_sem->count < 0){
-			sem_signal(depositbox->mbox_sem);
 		}
-		*/
+		/*
+		we only want to signal if there are threads waiting for a receive, aka count < 0
+		otherwise, a thread calling sem_wait might not block when in receive()
+		 */
+		sem_signal(depositbox->mbox_sem);
 	}
 	else
 		printf("(Attempted to send message to thread that does not exist)\n");
@@ -409,7 +397,7 @@ void send(int tid, char *msg, int len){
 
 void receive(int *tid, char *msg, int *len){
 	mbox *receivebox = NULL;
-	receivebox = running->mbox;	//the thread that's trying to get it's mailbox is the one that's currently running
+	receivebox = running->mbox;
 	if(*tid == 0){
 		while(receivebox->msg == NULL){
 			sem_wait(receivebox->mbox_sem);
@@ -425,13 +413,11 @@ void receive(int *tid, char *msg, int *len){
 		sem_signal(receivebox->blocksend_sem);
 	}
 	else{
-		//printf("ayyy\n");
 		int found = 0;
 		while(found == 0){
 			message_node *tmp = receivebox->msg;
 			//printf("tmp->sender = %d\n", tmp->sender);
 			if(tmp != NULL && tmp->sender == *tid){
-				//printf("mkay\n");
 				found = 1;
 				*len = tmp->len;
 				*tid = tmp->sender;
@@ -444,7 +430,6 @@ void receive(int *tid, char *msg, int *len){
 			}
 
 			while(found == 0 && tmp != NULL){
-				//printf("bitch lasangna\n");
 				if(tmp->next->sender == *tid){
 					found = 1;
 					*len = tmp->next->len;
@@ -462,7 +447,6 @@ void receive(int *tid, char *msg, int *len){
 				}
 			}
 			if(found == 0){
-				//printf("you shouldn't be here\n");
 				if(receivebox->mbox_sem->count > 0)
 					receivebox->mbox_sem->count = 0;
 				sem_wait(receivebox->mbox_sem);
@@ -491,45 +475,39 @@ void block_send(int tid, char *msg, int len){
 		}
 	}
 	if(depositbox != NULL){
-		//printf("found %d's depobox\n", tid);
 		message_node *mn = malloc(sizeof(message_node));
 		mn->len = len;
-		mn->sender = running->thread_id; //the thread that's trying to send is the one currently running
+		mn->sender = running->thread_id; 
 		mn->receiver = tid;
 		mn->next = NULL;
 		mn->message = malloc(sizeof(char) * len);
 		strcpy(mn->message, msg);
 		//printf("added message from: %d\n", mn->sender);
 		if(depositbox->msg == NULL){
-			//printf("added\n");
 			depositbox->msg = mn;
 		}
 		else{
-			//count++;
 			message_node *tmp = depositbox->msg;
 			while(tmp->next != NULL){
 				tmp = tmp->next;
-				//count++;
 			}
 			tmp->next = mn;
-			//printf("added\n");
 		}
-		//we only want to signal if there are threads waiting for a receive, aka count < 0
-		//otherwise, a thread calling sem_wait might not block when in receive()
+		/*
+		we only want to signal if there are threads waiting for a receive, aka count < 0
+		otherwise, a thread calling sem_wait might not block when in receive()
+		 */
 		sem_signal(depositbox->mbox_sem);
 		while(mn != NULL){
 			sem_wait(depositbox->blocksend_sem);
-			//printf("[%d] awoken from blocksend!\n", running->thread_id);
-			if(mn->len != len){
+			if(mn->len != len){	
+				/*
+				the message has been read if the other thread deleted it
+				meaning that the lengths will be different because it will no longer exist
+				 */
 				mn = NULL;
 			}
 		}
-		//printf("exiting blocksend...\n");
-		/*
-		if(depositbox->mbox_sem->count < 0){
-			sem_signal(depositbox->mbox_sem);
-		}
-		*/
 	}
 	else
 		printf("(Attempted to send message to thread that does not exist)\n");
